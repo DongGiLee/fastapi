@@ -1,5 +1,4 @@
 # FAST API
-- - -
 > https://fastapi.tiangolo.com/ko/
 ## Getting Started
 ```bash
