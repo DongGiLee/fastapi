@@ -1,76 +1,60 @@
-from fastapi import FastAPI, Query, Path
+from fastapi import FastAPI, Query, Path, Body
 from typing import Union
-from pydantic import Required
+from pydantic import BaseModel, Required
 
 app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    description: Union[str, None] = None
+    price: float
+    tax: Union[float, None] = None
+
+class User(BaseModel):
+    username: str
+    full_name: Union[str, None] = None
 
 @app.get(
     path="/",
     description="Step 2, Request Body"
 )
+
 async def main():
     return {"Hello":"World"}
 
-@app.get(
-    path='/items/{item_id}',
-    description="Path Import"
+@app.put(
+    path="/items/{item_id}",
+    description="Mix Path, Query Body Params"
 )
-async def read_items(
-    item_id: int = Path(title="ID of the item of get", default=Required),
-    q: Union[str, None] = Query(default=None, alias="item-query")
-):
-    results = {"item_id":item_id}
-    if q:
-        results.update({"q":q})
-
-    return results
-
-@app.get(
-    path='/items2/{item_id}',
-    description="Path , Parameter sorting"
-)
-async def sorting1(
-    q: str,
-    item_id: int = Path(title="ID of the item of get", default=Required)
-):
-    results = {"item_id":item_id}
-    if q:
-        results.update({"q":q})
-
-    return results
-
-@app.get(
-    path='/items3/{item_id}',
-    description="Path , Parameter sorting2 ,* "
-)
-async def sorting2(
+async def update_item(
     *,
-    item_id: int = Path(title="ID of the item of get", default=Required),
-    q: str
+    item_id: int = Path(title="ID the item to get", ge=0, le=1000),
+    q: Union[str, None] = None,
+    item: Union[str, None] = None
 ):
-    results = {"item_id":item_id}
-
+    result = {"item_id": item_id}
     if q:
-        results.update({"q":q})
+        result.update({"q":q})
+    if item:
+        result.update({"item": item})
+    return result
 
-    return results
-
-@app.get(
-    path='/integer/{integer}',
-    description="숫자 비교, gt,ge le,lt"
+@app.put(
+    path="/items2/{item_id}",
+    description="Multiple body parameters"
 )
-async def integercomparison(
-    *,
-    integer: int = Path(title="ID of the item of get",
-                        gt=0,
-                        le=100
-                        ),
-    q: Union[str,None] = None,
-    size: float = Query(gt=0, lt=10.5)
-):
-    results = {"item_id":integer, "size":size}
-
-    if q:
-        results.update({"q":q})
+async def update_item2(item_id: int, item: Item, user: User):
+    results = {"item_id": item_id, "item": item, "user": user}
 
     return results
+
+
+@app.put(
+    path="/body/{body_id}",
+    description="Multiple body parameters"
+)
+async def update_item2(body_id: int, item: Item, user: User, importance: int = Body()):
+    results = {"item_id": body_id, "item": item, "user": user, "importance": importance}
+
+    return results
+
