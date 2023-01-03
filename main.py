@@ -17,15 +17,14 @@ app = FastAPI()
 async def main():
     return {"Hello":"World"}
 
-@app.post(
-    path="/items",
-    description="모델 사용"
+@app.put(
+    path="/items/{item_id}",
+    description="Request Body + Path + Query String"
 )
-async def create_item(item: Item):
+async def create_item(item_id : int, item: Item, q: Union[str, None] = None):
 
-    item_dict = item.dict()
-    if item.tax:
-        price_with_tax = item.price + item.tax
-        item_dict.update({"price_with_tax":price_with_tax})
+    result = {"item_id":item_id, **item.dict()}
+    if q:
+        result.update({"q":q})
 
-    return item_dict
+    return result
