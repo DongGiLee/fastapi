@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Query
-from typing import Union, List
+from fastapi import FastAPI, Query, Path
+from typing import Union
 from pydantic import Required
 
 app = FastAPI()
@@ -12,149 +12,65 @@ async def main():
     return {"Hello":"World"}
 
 @app.get(
-    path="/items",
-    description="Query Validation"
+    path='/items/{item_id}',
+    description="Path Import"
 )
-async def read_item(q : Union[str, None] = Query(default= None, min_length=3,max_length=50)):
-    results = {"items":[{"item_id":"Foo"},{"item_id":"Bar"}]}
-
+async def read_items(
+    item_id: int = Path(title="ID of the item of get", default=Required),
+    q: Union[str, None] = Query(default=None, alias="item-query")
+):
+    results = {"item_id":item_id}
     if q:
-        results.update({"q": q})
+        results.update({"q":q})
 
     return results
 
 @app.get(
-    path="/items2",
-    description="Query Validation Regex"
+    path='/items2/{item_id}',
+    description="Path , Parameter sorting"
 )
-async def read_item2(q : Union[str, None] = Query(default= None, min_length=3,max_length=50, regex="^fixedquery$")):
-    results = {"items":[{"item_id":"Foo"},{"item_id":"Bar"}]}
-
+async def sorting1(
+    q: str,
+    item_id: int = Path(title="ID of the item of get", default=Required)
+):
+    results = {"item_id":item_id}
     if q:
-        results.update({"q": q})
+        results.update({"q":q})
 
     return results
 
 @app.get(
-    path="/items3",
-    description="Query Validation Default"
+    path='/items3/{item_id}',
+    description="Path , Parameter sorting2 ,* "
 )
-async def read_item3(q : str = Query(default= "fixedquery", min_length=3,max_length=50)):
-    results = {"items":[{"item_id":"Foo"},{"item_id":"Bar"}]}
+async def sorting2(
+    *,
+    item_id: int = Path(title="ID of the item of get", default=Required),
+    q: str
+):
+    results = {"item_id":item_id}
 
     if q:
-        results.update({"q": q})
+        results.update({"q":q})
 
     return results
 
 @app.get(
-    path="/items4",
-    description="Query Validation Required"
+    path='/integer/{integer}',
+    description="숫자 비교, gt,ge le,lt"
 )
-async def read_item4(q : str = Query(min_length=3, max_length=50)):
-    results = {"items":[{"item_id":"Foo"},{"item_id":"Bar"}]}
+async def integercomparison(
+    *,
+    integer: int = Path(title="ID of the item of get",
+                        gt=0,
+                        le=100
+                        ),
+    q: Union[str,None] = None,
+    size: float = Query(gt=0, lt=10.5)
+):
+    results = {"item_id":integer, "size":size}
 
     if q:
-        results.update({"q": q})
+        results.update({"q":q})
 
     return results
-
-@app.get(
-    path="/items5/",
-    description="Query Validation Required를 명시적으로 선언할때 쓰임, default: ..."
-)
-async def read_item5(q : str = Query(default=..., min_length=3)):
-    results = {"items":[{"item_id":"Foo"},{"item_id":"Bar"}]}
-
-    if q:
-        results.update({"q": q})
-
-    return results
-
-@app.get(
-    path="/items6/",
-    description="Query Validation None과 required를 명시적으로 선언"
-)
-async def read_item6(q : Union[str, None] = Query(default=..., min_length=3)):
-    results = {"items":[{"item_id":"Foo"},{"item_id":"Bar"}]}
-
-    if q:
-        results.update({"q": q})
-
-    return results
-
-@app.get(
-    path="/items7/",
-    description="Query Validation Required - Pydantic"
-)
-async def read_item7(q : Union[str, None] = Query(default=Required, min_length=3)):
-    results = {"items":[{"item_id":"Foo"},{"item_id":"Bar"}]}
-
-    if q:
-        results.update({"q": q})
-
-    return results
-
-@app.get(
-    path="/multiquery/",
-    description="Query parameter list / multiple values"
-)
-async def multiquery(q: Union[List[str], None] = Query(default=["Foo","Bar"] )):
-
-    query_items = {"q": q}
-
-    return query_items
-
-@app.get(
-    path="/multiquery2/",
-    description="Query parameter list / multiple values 2"
-)
-async def multiquery2(q: list = Query(default=[])):
-
-    query_items = {"q": q}
-
-    return query_items
-
-
-@app.get(
-    path="/metadata/",
-    description="Meta data title, description, ..."
-)
-async def metadata(q: Union[str, None] = Query(
-    default=None,
-    title="metadata Title",
-    description="metadata Description"
-)):
-
-    query_items = {"q": q}
-
-    return query_items
-@app.get(
-    path="/metadata2/",
-    description="Meta data alias, deprecated..."
-)
-async def metadata(q: Union[str, None] = Query(
-    default=None,
-    alias="item-query",
-    deprecated=True
-)):
-
-    query_items = {"q": q}
-
-    return query_items
-
-
-@app.get(
-    path="/hidden/",
-    description="Open API에서 hidden, include_in_schema"
-)
-async def hidden(hidden_query: Union[str, None] = Query(
-    default=None,
-    include_in_schema=False
-)):
-    if hidden_query:
-        return {"hidden_query": hidden_query}
-    else:
-        return {"hidden_query": "Not found"}
-
-
