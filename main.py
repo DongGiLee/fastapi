@@ -1,12 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from typing import Union
-from pydantic import BaseModel
 
-class Item(BaseModel):
-    name: str
-    description: Union[str, None] = None
-    price: float
-    tax: Union[float, None] = None
 
 app = FastAPI()
 
@@ -17,14 +11,14 @@ app = FastAPI()
 async def main():
     return {"Hello":"World"}
 
-@app.put(
-    path="/items/{item_id}",
-    description="Request Body + Path + Query String"
+@app.get(
+    path="/items",
+    description="Query Validation"
 )
-async def create_item(item_id : int, item: Item, q: Union[str, None] = None):
+async def read_item(q : Union[str, None] = Query(default= None, min_length=3,max_length=50)):
+    results = {"items":[{"item_id":"Foo"},{"item_id":"Bar"}]}
 
-    result = {"item_id":item_id, **item.dict()}
     if q:
-        result.update({"q":q})
+        results.update({"q": q})
 
-    return result
+    return results
