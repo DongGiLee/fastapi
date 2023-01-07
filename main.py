@@ -40,21 +40,51 @@ async def update_item(
     return result
 
 @app.put(
-    path="/items2/{item_id}",
-    description="Multiple body parameters"
-)
-async def update_item2(item_id: int, item: Item, user: User):
-    results = {"item_id": item_id, "item": item, "user": user}
-
-    return results
-
-
-@app.put(
     path="/body/{body_id}",
     description="Multiple body parameters"
 )
-async def update_item2(body_id: int, item: Item, user: User, importance: int = Body()):
+async def body_params(body_id: int, item: Item, user: User, importance: int = Body()):
     results = {"item_id": body_id, "item": item, "user": user, "importance": importance}
+
+    return results
+
+@app.put(
+    path="/body2/{body_id}",
+    description="Multiple body parameters option"
+)
+async def body_params_option(
+        body_id: int,
+        item: Item,
+        user: User,
+        importance: int = Body(gt=0),
+        q: Union[str, None] = None
+):
+    results = {"item_id": body_id, "item": item, "user": user, "importance": importance}
+    if q:
+        results.update({"q":q})
+
+    return results
+
+@app.put(
+    path="/body3/{body_id}",
+    description="Multiple body parameters option, embed"
+)
+async def body_params_option2(
+        body_id: int,
+        item: Item = Body(embed=True),
+):
+    results = {"item_id": body_id, "item": item}
+
+    return results
+@app.put(
+    path="/body4/{body_id}",
+    description="Multiple body parameters option, embed 비교"
+)
+async def body_params_option3(
+        body_id: int,
+        item: Item = Body(),
+):
+    results = {"item_id": body_id, "item": item}
 
     return results
 
