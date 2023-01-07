@@ -1,13 +1,20 @@
 from fastapi import FastAPI, Query, Path, Body
 from typing import Union
-from pydantic import BaseModel, Required
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
 class Item(BaseModel):
     name: str
-    description: Union[str, None] = None
-    price: float
+    description: Union[str, None] = Field(
+        default=None,
+        title="The description of the item",
+        max_length=300
+    )
+    price: float = Field(
+        gt=0,
+        description="The price must be greater than zero"
+    )
     tax: Union[float, None] = None
 
 class User(BaseModel):
@@ -16,75 +23,21 @@ class User(BaseModel):
 
 @app.get(
     path="/",
-    description="Step 2, Request Body"
+    description="Step 2, Request Body Fields"
 )
-
 async def main():
     return {"Hello":"World"}
 
 @app.put(
     path="/items/{item_id}",
-    description="Mix Path, Query Body Params"
+    description="Body Field"
 )
 async def update_item(
-    *,
-    item_id: int = Path(title="ID the item to get", ge=0, le=1000),
-    q: Union[str, None] = None,
-    item: Union[str, None] = None
+        item_id: int,
+        item: Item = Body(embed=True)
 ):
-    result = {"item_id": item_id}
-    if q:
-        result.update({"q":q})
-    if item:
-        result.update({"item": item})
-    return result
-
-@app.put(
-    path="/body/{body_id}",
-    description="Multiple body parameters"
-)
-async def body_params(body_id: int, item: Item, user: User, importance: int = Body()):
-    results = {"item_id": body_id, "item": item, "user": user, "importance": importance}
+    results = { "item_id": item_id, "item": item}
 
     return results
 
-@app.put(
-    path="/body2/{body_id}",
-    description="Multiple body parameters option"
-)
-async def body_params_option(
-        body_id: int,
-        item: Item,
-        user: User,
-        importance: int = Body(gt=0),
-        q: Union[str, None] = None
-):
-    results = {"item_id": body_id, "item": item, "user": user, "importance": importance}
-    if q:
-        results.update({"q":q})
-
-    return results
-
-@app.put(
-    path="/body3/{body_id}",
-    description="Multiple body parameters option, embed"
-)
-async def body_params_option2(
-        body_id: int,
-        item: Item = Body(embed=True),
-):
-    results = {"item_id": body_id, "item": item}
-
-    return results
-@app.put(
-    path="/body4/{body_id}",
-    description="Multiple body parameters option, embed 비교"
-)
-async def body_params_option3(
-        body_id: int,
-        item: Item = Body(),
-):
-    results = {"item_id": body_id, "item": item}
-
-    return results
 
